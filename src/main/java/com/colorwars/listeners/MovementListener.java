@@ -12,7 +12,10 @@ import java.util.UUID;
 public class MovementListener implements Listener {
 
     private static final double LEASH_RANGE = 50.0;
-    private final java.util.Map<UUID, Long> lastWarnMillis = new java.util.HashMap<>();
+    private static final double LEASH_DAMAGE = 2.0; // 1하트, 범위를 벗어나 있는 동안 주기적으로 적용
+    private static final long DAMAGE_COOLDOWN_MILLIS = 1000L; // 1초에 한 번씩 데미지
+
+    private final java.util.Map<UUID, Long> lastDamageMillis = new java.util.HashMap<>();
 
     private final GameManager gm;
 
@@ -41,7 +44,7 @@ public class MovementListener implements Listener {
 
         if (!gm.isRunning()) return;
 
-        // 2) 부하는 주인으로부터 50블록 이상 벗어날 수 없음
+        // 2) 부하는 주인으로부터 50블록 이상 벗어나면 이동은 막지 않되 데미지를 입음
         if (!gm.isMinion(id)) return;
         UUID ownerId = gm.getOwner(id);
         Player owner = ownerId != null ? org.bukkit.Bukkit.getPlayer(ownerId) : null;
@@ -49,14 +52,14 @@ public class MovementListener implements Listener {
         if (!owner.getWorld().equals(p.getWorld())) return; // 다른 월드면 제한 판단 불가, 통과
 
         if (owner.getLocation().distance(e.getTo()) > LEASH_RANGE) {
-            e.setCancelled(true);
             long now = System.currentTimeMillis();
-            Long last = lastWarnMillis.get(id);
-            if (last == null || now - last > 2000) {
+            Long last = lastDamageMillis.get(id);
+            if (last == null || now - last >= DAMAGE_COOLDOWN_MILLIS) {
+                p.damage(LEASH_DAMAGE);
                 p.sendActionBar(net.kyori.adventure.text.Component
-                        .text("주인으로부터 " + (int) LEASH_RANGE + "블록 이상 벗어날 수 없습니다.")
+                        .text("주인으로부터 " + (int) LEASH_RANGE + "블록 이상 벗어나 피해를 입고 있습니다!")
                         .color(net.kyori.adventure.text.format.NamedTextColor.RED));
-                lastWarnMillis.put(id, now);
+                lastDamageMillis.put(id, now);
             }
         }
     }
