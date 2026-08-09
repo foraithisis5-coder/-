@@ -1,0 +1,26 @@
+name: ColorWars
+version: '1.0.0'
+main: com.colorwars.ColorWarsPlugin
+api-version: '1.21'
+author: ColorWars
+description: 색 순환 기반 PvP 정복 게임 (플레이어를 죽이면 부하로 만듭니다)
+
+commands:
+  colorwars:
+    description: 컬러워즈 게임 관리 명령어
+    usage: |
+      /colorwars register  - 다음 게임에 참가 등록
+      /colorwars start     - (운영자) 등록된 플레이어로 게임 시작
+      /colorwars stop      - (운영자) 게임 강제 종료
+      /colorwars status    - 현재 색 순환/부하 현황 확인
+    aliases: [cw]
+    permission: colorwars.use
+    permission-message: 권한이 없습니다.
+
+permissions:
+  colorwars.use:
+    description: 컬러워즈 명령어 사용 권한
+    default: true
+  colorwars.admin:
+    description: 게임 시작/종료 권한
+    default: op
